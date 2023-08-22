@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}
+  Лента записей
+{% endblock title %}
+{% block content %}
+  {% for post in posts %}
+    <hr>
+    {% include "includes/post.html" with post_text=post.text|truncatewords:10 show_post_link=True %}
+  {% endfor %}
+{% endblock content %}
