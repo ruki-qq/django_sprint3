@@ -1,20 +1,21 @@
-from datetime import datetime
-
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
 
 from .models import Category, Post
+
+POSTS_COUNT = 5
 
 
 def index(request):
     template = 'blog/index.html'
     post_list = (
-        Post.objects.select_related('category')
+        Post.objects.select_related('category', 'author')
+        .prefetch_related('location')
         .filter(
-            pub_date__lt=datetime.now(),
+            pub_date__lte=timezone.now(),
             is_published=True,
             category__is_published=True,
-        )
-        .order_by('-pub_date')[0:5]
+        )[:POSTS_COUNT]
     )
     context = {'post_list': post_list}
     return render(request, template, context)
@@ -23,8 +24,10 @@ def index(request):
 def post_detail(request, id):
     template = 'blog/detail.html'
     post = get_object_or_404(
-        Post.objects.select_related('category').filter(
-            pub_date__lt=datetime.now(),
+        Post.objects.select_related('category', 'author')
+        .prefetch_related('location')
+        .filter(
+            pub_date__lte=timezone.now(),
             is_published=True,
             category__is_published=True,
         ),
@@ -41,14 +44,13 @@ def category_posts(request, category_slug):
         slug=category_slug,
     )
     post_list = (
-        Post.objects.select_related('category')
+        Post.objects.select_related('category', 'author')
+        .prefetch_related('location')
         .filter(
-            pub_date__lt=datetime.now(),
+            pub_date__lte=timezone.now(),
             is_published=True,
-            category__is_published=True,
             category__slug=category_slug,
         )
-        .order_by('-pub_date')
     )
     context = {'category': category, 'post_list': post_list}
     return render(request, template, context)

@@ -1,9 +1,21 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from common.models import PublishedModel
+UserModel = get_user_model()
 
-User = get_user_model()
+
+class PublishedModel(models.Model):
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name='Опубликовано',
+        help_text='Снимите галочку, чтобы скрыть публикацию.',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='Добавлено'
+    )
+
+    class Meta:
+        abstract = True
 
 
 class Category(PublishedModel):
@@ -48,7 +60,7 @@ class Post(PublishedModel):
         ),
     )
     author = models.ForeignKey(
-        User,
+        UserModel,
         on_delete=models.CASCADE,
         related_name='posts',
         verbose_name='Автор публикации',
@@ -70,6 +82,7 @@ class Post(PublishedModel):
     )
 
     class Meta:
+        ordering = ('pub_date',)
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
 
